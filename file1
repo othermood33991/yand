@@ -1,0 +1,174 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <stack>
+#include <algorithm>
+#include <unordered_map>
+#include <cstring>
+#include <set>
+#include <map>
+#include <queue>
+#include <iterator>
+
+using namespace std;
+
+const  long long P =  1000000007;
+const long long X = 263;
+
+struct Element{ 
+    Element(long long key, string value, Element *next, Element *prev) :
+        nKey(key), nValue(value), nNext(next), nPrev(prev) {};
+    long long nKey;
+    string nValue;
+    Element *nNext;
+    Element *nPrev;
+};
+
+class HT{ 
+    public:
+    HT(long long m);
+       void addS(string s);
+       void delS(string s);
+       void findS(string s);
+       void checkS(long long k);
+       long long hf(string s);
+
+    private:
+       vector<Element*> mainVector;
+       Element* findPrivate(string s);
+       long long nM;
+};
+
+int main(){
+
+    ios::sync_with_stdio(false);
+    
+    long long m,n;
+    cin>>m>>n;
+    HT hTable(m);
+    for(long long i = 0; i<n; ++i){
+        string s1;
+        string s2;
+        long long num;
+        cin>>s1;
+
+        switch (s1[0]) {
+            case 'a':{
+            cin>>s2;
+            hTable.addS(s2);
+            break;
+            }
+
+            case 'd':{
+                cin>>s2;
+                hTable.delS(s2);
+                break;
+            }
+
+            case 'f':{
+                cin>>s2;
+                hTable.findS(s2);
+                break;
+            }
+
+            case 'c':{
+                cin>>num;
+                hTable.checkS(num);
+                break;
+            }
+      }
+    }
+}
+
+HT::HT(long long m){ 
+    nM = m;
+    mainVector.reserve(nM+1);
+       for(long long i = 0; i < nM+1; ++i)
+           mainVector.push_back(new Element(i,"",nullptr,nullptr));
+}
+
+long long HT::hf(string s){ 
+    long long rez = 0;
+    long long xi = 1;
+     for(long long i = 0; i<s.length(); ++i){
+         rez+=xi*(long long)s[i];
+         xi = (xi%P*263%P)%P;
+     }
+     rez = (rez%P)%nM;
+     return rez;
+}
+
+Element *HT::findPrivate(string s)
+{
+    Element *elem = mainVector[hf(s)];
+    while (elem->nNext) {
+        if(elem->nNext->nValue == s)
+            return elem->nNext;
+        else{
+            elem = elem->nNext;
+        }
+    }
+    return  nullptr;
+}
+
+void HT::addS(string s){ 
+    Element *elem = findPrivate(s);
+    if(elem == nullptr){
+        long long key = hf(s);
+        auto *newElem = new Element(key,s,nullptr,nullptr);
+        if(mainVector[key]->nNext == nullptr){
+            mainVector[key]->nNext = newElem;
+            newElem->nPrev = mainVector[key];
+        }
+        else{
+            auto *cur = mainVector[key]->nNext;
+            newElem->nNext = cur;
+            cur->nPrev = newElem;
+            newElem->nPrev = mainVector[key];
+            mainVector[key]->nNext = newElem;
+        }
+    }
+}
+
+void HT::delS(string s){ 
+    Element *cur = mainVector[hf(s)];
+    Element *mainV = cur;
+    while(cur->nNext){
+        if(cur->nNext->nValue == s){
+                Element *trash = cur->nNext;
+                Element *pr = trash->nPrev;
+                if(trash->nNext == nullptr){
+                    Element *pp = trash->nPrev;
+                    pp->nNext = nullptr;
+                    delete trash;
+                    break;
+                }
+                else{
+                    Element *nx = trash->nNext;
+                    nx->nPrev = pr;
+                    pr->nNext = nx;
+                    delete trash;
+                    break;
+                }
+        }
+    cur = cur->nNext;
+    }
+}
+
+void HT::findS(string s){
+    Element *elem = findPrivate(s);
+    if(elem == nullptr)
+        cout<<"no"<<endl;
+    else
+        cout<<"yes"<<endl;
+}
+
+void HT::checkS(long long k){
+    Element *cur = mainVector[k];
+    if(cur->nNext!=nullptr)
+        while(cur){
+            cout<<cur->nValue<<" ";
+            cur = cur->nNext;
+        }
+        cout<<endl;
+}
