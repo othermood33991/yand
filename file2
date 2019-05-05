@@ -1,0 +1,77 @@
+#include <iostream>
+#include "vector"
+#include <tuple>
+#include <algorithm>
+#include <sstream>
+
+bool myComp(const std::tuple<int, int, int, int, char> & a,
+             const std::tuple<int, int, int, int, char> & b)
+{
+    if(std::get<2>(a) == std::get<2>(b))
+    {
+     return (std::get<0>(a) < std::get<0>(b));
+    }
+    return  (std::get<2>(a) < std::get<2>(b));
+}
+
+bool finalComp(const std::tuple<int, int, int, int, char> & a,
+             const std::tuple<int, int, int, int, char> & b)
+{
+    return (std::get<1>(a) < std::get<1>(b));
+}
+
+ int main()
+ {
+     ios::sync_with_stdio(false);
+     
+     int m; 
+     int n; 
+     
+     std::cin>>n;
+     std::cin>>m;
+     
+     std::vector<std::tuple<int, int, int, int, char>> point(m+2*n);//(н,к), индекс,значение,скок входит,пометка(точка)
+
+     int a,b,p;
+     int value = 0;
+     int num = -1;
+
+     for(int i = 0; i < 2*n; i+=2)
+     {
+         std::cin>>a>>b;
+         point[i] = std::make_tuple(0,-1,a,0,'r');
+         point[i+1] = std::make_tuple(2,-1,b,0,'r');
+     }
+
+     for(int i = 2*n; i<m+2*n; ++i)
+     {   ++num;
+         std::cin>>p;
+         point[i] = std::make_tuple(1,num, p, 0,'p');
+
+     }
+
+     std::sort(point.begin(), point.end(), myComp);
+
+     for(auto &i : point)
+     {
+         if(std::get<4>(i) == 'r')
+               {
+             if(std::get<0>(i) == 0)
+            ++value;
+
+         }
+         if(std::get<4>(i) == 'r')
+               {
+             if(std::get<0>(i) == 2)
+            --value;
+         }
+         if(std::get<4>(i) == 'p')
+             std::get<3>(i) = value;
+     }
+
+    std::sort(point.begin(),point.end(), finalComp);
+
+    for(auto i : point)
+        if(std::get<1>(i) != -1)
+            std::cout<<std::get<3>(i)<<' ';
+ }
